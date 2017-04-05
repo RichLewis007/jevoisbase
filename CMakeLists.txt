@@ -148,6 +148,11 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fopenmp")
 add_definitions(-DWITH_OPENMP -DUSE_PARALLEL_ON_FLOWAGGR)
 
 ########################################################################################################################
+# Include MAVLink Directories
+include_directories("${JVB}/../mavlink"
+                    "${JVB}/../mavlink/common")
+
+########################################################################################################################
 # Link to OpenCV libraries for superpixels, aruco, and others (from pkg-config --libs opencv and deleting a few):
 target_link_libraries(jevoisbase ${JEVOIS_OPENCV_LIBS} opencv_stitching opencv_superres opencv_videostab
   opencv_aruco opencv_bgsegm opencv_bioinspired opencv_ccalib opencv_dnn opencv_dpm opencv_fuzzy
