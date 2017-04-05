@@ -149,8 +149,8 @@ add_definitions(-DWITH_OPENMP -DUSE_PARALLEL_ON_FLOWAGGR)
 
 ########################################################################################################################
 # Include MAVLink Directories
-include_directories("${JVB}/../mavlink"
-                    "${JVB}/../mavlink/common")
+include_directories("${JVB}/../jevoisbased/mavlink"
+                    "${JVB}/../jevoisbased/mavlink/common")
 
 ########################################################################################################################
 # Link to OpenCV libraries for superpixels, aruco, and others (from pkg-config --libs opencv and deleting a few):

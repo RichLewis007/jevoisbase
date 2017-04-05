@@ -21,15 +21,14 @@ to pass settings to compnent without including header
 #ifdef JEVOIS_PLATFORM
     //! On platform hardware, device for the 4-pin hardware serial port
     #define JEVOIS_SERIAL_DEFAULT "/dev/ttyS0"
-
 #else
     //! On generic computer hardware, device for serial port should always be stdio to use an StdioInterface
-    #define JEVOIS_SERIAL_DEFAULT "stdio"
-
+    #define JEVOIS_SERIAL_DEFAULT "stdio" //Change to another serial device or perhaps implement UDP
 #endif
 
 namespace MAVLinkCommunication
 {
+    class UserInterface;
     //! Parameter 
     // JEVOIS_DECLARE_PARAMETER_WITH_CALLBACK(serialdev, std::string, "Hardware (4-pin connector) serial device name, "
     //                                            "or 'stdio' to use the console, or empty for no hardware serial port",
@@ -48,7 +47,6 @@ public:
 
     //! Destructor
     virtual ~MAVLinkCommunication();
-
     //! System State
     void sendSystemState(void);
 
@@ -58,8 +56,8 @@ public:
     //! Receive 
     void receive(void);
 
-    //! Handle MAVLink Messages
-    void handle_mavlink_message(mavlink_channel_t chan, mavlink_message_t* msg);
+    //! Handle MAVLink Messages - Defined in implementation module file
+    void handle_mavlink_message(mavlink_message_t* msg);
 
     mavlink_system_t mavlink_system;
 
