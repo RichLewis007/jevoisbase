@@ -9,7 +9,7 @@ MAVLink Integration on Jevois Module
 
 // ####################################################################################################
 MAVLinkCommunication::MAVLinkCommunication(std::string const & instance, struct MAVLink_data_struct * MAVData) :
-  jevois::Component(instance), itsInstance(this), itsMAVLinkData(MAVData), m_parameter_i(0)
+  jevois::Component(instance), itsInstance(this), itsMAVLinkData(MAVData), m_parameter_i(ONBOARD_PARAM_COUNT)
 
 {
   // I need to access this parameter the proper way in order to call onParChange
@@ -55,16 +55,16 @@ void MAVLinkCommunication::sendParameters(void) {
 }
 
 // ####################################################################################################
-void MAVLinkCommunication::receive(void) {
+void MAVLinkCommunication::receive(void){  
 
   mavlink_message_t msg;
-  mavlink_status_t status = { 0 };
+  mavlink_status_t status = { 0 }
 
   /* 20 bytes at a time */
   const unsigned character_count = 20;
 
   /* Read up to buffer size. Loop through characters read and parse. Handle message when packet is compelte */
-  if ( (numbytes = itsSerial->read(MAVLinkReceiveBuf, sizeof(MAVLinkReceiveBuf)) > (size_t)character_count) {
+  if ( (numbytes = itsSerial->read(MAVLinkReceiveBuf, sizeof(MAVLinkReceiveBuf) )) > (size_t)character_count) {
   for (size_t i = 0; i < numbytes; i++) {
       if (mavlink_parse_char(MAVLINK_COMM_0, MAVLinkReceiveBuf[i], &msg, &status))
       {
@@ -84,7 +84,7 @@ MAVLinkCommunication::get_instance(unsigned instance)
     return itsInstance;
   }
 
-  LERROR("No MAVlink Instance to return");
+  LERROR("No MAVLink instance available");
   return nullptr;
 }
 
@@ -94,6 +94,7 @@ This MAVLink convenience function, once defined, will be used by MAVLink to send
 It provides MAVLink with the device serial interface to send bytes.
 */
 void mavlink_send_uart_bytes(mavlink_channel_t chan, const uint8_t * ch, uint16_t length) {
+  
   // For now just implement on Hard Serial, then incorporate USB Serial
   if (chan == MAVLINK_COMM_0)
   {
@@ -102,6 +103,27 @@ void mavlink_send_uart_bytes(mavlink_channel_t chan, const uint8_t * ch, uint16_
     MAVLinkCommunication *m = MAVLinkCommunication::get_instance();
     if (m != nullptr) {
       m->itsSerial->write(ch, length);
+
     }
   }
+}
+
+
+
+/*
+ * Internal function to give access to the channel status for each channel
+ */
+mavlink_status_t* mavlink_get_channel_status(uint8_t channel)
+{
+  static mavlink_status_t m_mavlink_status[MAVLINK_COMM_NUM_BUFFERS];
+  return &m_mavlink_status[channel];
+}
+
+/*
+ * Internal function to give access to the channel buffer for each channel
+ */
+mavlink_message_t* mavlink_get_channel_buffer(uint8_t channel)
+{
+  static mavlink_message_t m_mavlink_buffer[MAVLINK_COMM_NUM_BUFFERS];
+  return &m_mavlink_buffer[channel];
 }

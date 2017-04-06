@@ -59,21 +59,20 @@ public:
     //! Handle MAVLink Messages - Defined in implementation module
     void handle_mavlink_message(mavlink_message_t* msg);
 
+    // static to access from c function implementation
     static MAVLinkCommunication      *get_instance(unsigned instance = 0);
 
     mavlink_system_t mavlink_system;
-    static uint32_t m_parameter_i = ONBOARD_PARAM_COUNT;
-
-
+    static uint32_t m_parameter_i;
 
     // Assume we need one instance now, expand to vector (See PX4 MAVLink module implementation
     // and the use of hash list header utlist.h)
+    // Does it need to be static?
     static MAVLinkCommunication    *itsInstance;
 
 private:
     int numbytes = 0;
     uint8_t MAVLinkReceiveBuf[64];
-
 
    //! Methods to get internal status of MAVLink
    // mavlink_status_t* mavlink_get_channel_status(uint8_t channel);
