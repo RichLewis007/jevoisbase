@@ -51,6 +51,12 @@ MAVLinkCommunication::handle_mavlink_message(mavlink_message_t* msg){
 //Somewhere in here
     case MAVLINK_MSG_ID_ATTITUDE:
     mavlink_msg_attitude_decode(msg, & MAVLinkTest::attitude);
+
+    case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
+    {
+        /* Start sending parameters */
+        m_parameter_i = 0;
+    }
 }
 // Allow the module to be loaded as a shared object (.so) file:
 JEVOIS_REGISTER_MODULE(MAVLinkTest);
