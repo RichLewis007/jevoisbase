@@ -18,7 +18,7 @@ MAVLinkCommunication::MAVLinkCommunication(std::string const & instance, struct 
   // Add Serial locally here
   itsSerial = addSubComponent<jevois::Serial>("serial", MAVLinkCommunication::UserInterface::Type::Hard);
   itsSerial->setParamVal("devname", MAVLinkCommunication::serialdev);
-  // Or?  What is MAVLinkCommunication::serialdev type?
+  // Or?  What is MAVLinkCommunication::serialdev type??
   // itsSerial-> setParamString("devname", MAVLinkCommunication::serialdev);
 
   // Reset MAVLink Parameters to Default
