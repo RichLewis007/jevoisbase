@@ -13,5 +13,5 @@ Contrib/vlfeat
 /pbuild/
 /jvpkg/
 /doc/
-/JeVois_jevoisbase.jvpkg
+*.jvpkg
 *~
