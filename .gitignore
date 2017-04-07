@@ -12,4 +12,5 @@ Contrib/vlfeat
 /hbuild/
 /pbuild/
 /jvpkg/
+/doc/
 *.jvpkg
