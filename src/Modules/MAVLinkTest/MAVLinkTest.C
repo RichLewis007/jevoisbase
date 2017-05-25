@@ -8,7 +8,7 @@
 #include "MAVLinkCommunication.h"
 #include "MAVLinkTest_settings.h"
 
-namespace MAVLinkn {
+namespace mavlink {
 
 
 }
