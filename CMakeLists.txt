@@ -141,11 +141,11 @@ endif (JEVOIS_PLATFORM)
   
 # Enable OpenMP, which can accelerate the fast optical flow code. NOTE: With small images and when running on a fast
 # Intel-based host, this actually slows down the code by 10x or so, probably the parallelism overhead is not worth it
-# for small images. Yet, we enable it here as it seems to help on the platform:
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+# for small images. Yet, we enable it here as it seems to help on thje platform:
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
-set(CMAKE_C_FLAGS_DEBUG  "${CMAKE_C_FLAGS} -fopenmp")
+#set(CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS} -fopenmp")
+#set(CMAKE_C_FLAGS_DEBUG  "${CMAKE_C_FLAGS} -fopenmp")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fopenmp")
 add_definitions(-DWITH_OPENMP -DUSE_PARALLEL_ON_FLOWAGGR)
 

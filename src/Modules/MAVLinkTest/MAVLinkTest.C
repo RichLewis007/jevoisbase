@@ -45,7 +45,68 @@ public:
     //! Virtual destructor for safe inheritance
     virtual ~MAVLinkTest() {}
 
-    //! Processing function
+    //! MAVLink Task
+    void MAVLinkTask(){
+
+        LINFO("Grabbing a mavlink instance in MAVLinkTest");
+        //auto m = MAVLink::get_instance(MAVLink::Type_t::USB);
+
+        //auto m = mavlink::gMAVLink_instances[MAVLink::Type_t::USB];
+        auto m = itsMAVLink;
+        //if (m == nullptr) LERROR("No Valid Instance. Count");
+        // Send Heartbeat Every 1 second
+        end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        if (elapsed_seconds.count() >= 0.50) {
+            m->send_system_state();
+            LINFO("elapsed time: " << elapsed_seconds.count());
+            start = std::chrono::system_clock::now();
+        }
+        LINFO("Receive");
+        // Read Periodically
+        //m->receive();
+        //TODO: run mavlink in separate thread, then block when reading to allow for full packet transmit.
+
+        // Send Parameters
+        //m->send_parameters(TRUE);
+//
+//        /* Process Dummy Data */
+//        {
+//            dummy_increment++;
+//            vision_position << 50, 100, 150;
+//            vision_position += 2 * dummy_increment * Eigen::Vector3f::Ones();
+//            vision_position += 5 * Eigen::Vector3f::Random();
+//            if (dummy_increment > 3) dummy_increment = 0;
+//        }
+//        /* Send Dummy Data */
+//        {
+//            mavlink_msg_vision_position_estimate_send(MAVLINK_COMM_1, get_boot_time_us(),
+//                                                      vision_position(0), vision_position(1), vision_position(2),
+//                                                      0, 0, 0);
+//        }
+    }
+
+    // ####################################################################################################
+    //! Processing function, no video output
+    // ####################################################################################################
+    virtual void process(jevois::InputFrame && inframe) override {
+
+        itsProcessingTimer.start();
+        std::chrono::high_resolution_clock::now();
+        // PASSTHROUGH //
+
+        // Wait for next available camera image:
+        jevois::RawImage const inimg = inframe.get(true);
+        inframe.done(); // NOTE: optional here, inframe destructor would call it anyway
+
+        MAVLinkTask();
+
+        std::string const &mavlinkcputime = itsProcessingTimer.stop();
+    }
+
+    // ####################################################################################################
+    //! Processing function with video output to USB
+    // ####################################################################################################
     virtual void process(jevois::InputFrame && inframe, jevois::OutputFrame && outframe) override {
 
         itsProcessingTimer.start();
@@ -73,42 +134,10 @@ public:
 
         // Send the output image with our processing results to the host over USB:
         outframe.send(); // NOTE: optional here, outframe destructor would call it anyway
-        LINFO("Grabbing a mavlink instance in MAVLinkTest");
-        //auto m = MAVLink::get_instance(MAVLink::Type_t::USB);
-        auto m = mavlink::gMAVLink_instances[MAVLink::Type_t::USB];
-        // Send Heartbeat Every 1 second
-        end = std::chrono::system_clock::now();
-        std::chrono::duration<double> elapsed_seconds = end - start;
-        if (elapsed_seconds.count() >= 0.50) {
-            //m->send_system_state();
-            LINFO("elapsed time: " << elapsed_seconds.count());
-            start = std::chrono::system_clock::now();
-        }
-        LINFO("Receive");
-        // Read Periodically
-        //m->receive();
-        //TODO: run mavlink in separate thread, then block when reading to allow for full packet transmit.
 
-        // Send Parameters
-        //m->send_parameters(TRUE);
-//
-//        /* Process Dummy Data */
-//        {
-//            dummy_increment++;
-//            vision_position << 50, 100, 150;
-//            vision_position += 2 * dummy_increment * Eigen::Vector3f::Ones();
-//            vision_position += 5 * Eigen::Vector3f::Random();
-//            if (dummy_increment > 3) dummy_increment = 0;
-//        }
-//        /* Send Dummy Data */
-//        {
-//            mavlink_msg_vision_position_estimate_send(MAVLINK_COMM_1, get_boot_time_us(),
-//                                                      vision_position(0), vision_position(1), vision_position(2),
-//                                                      0, 0, 0);
-//        }
+        MAVLinkTask();
 
         std::string const &mavlinkcputime = itsProcessingTimer.stop();
-
     }
 
     static mavlink_attitude_t attitude;
@@ -128,7 +157,6 @@ mavlink_attitude_t MAVLinkTest::attitude;
 //! Define handle_mavlink_message here - it's specific to the application
 void MAVLink::handle_mavlink_message(mavlink_message_t *msg) {
 
-    int i = 1;
     switch (msg->msgid) {
         case MAVLINK_MSG_ID_PARAM_REQUEST_READ: {
             /* Copied from PX4Flow Implementation */
