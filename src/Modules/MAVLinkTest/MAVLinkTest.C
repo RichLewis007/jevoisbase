@@ -49,11 +49,11 @@ public:
     void MAVLinkTask(){
 
         LINFO("Grabbing a mavlink instance in MAVLinkTest");
-        //auto m = MAVLink::get_instance(MAVLink::Type_t::USB);
+        auto m = MAVLink::get_instance(MAVLink::Type_t::USB);
 
-        //auto m = mavlink::gMAVLink_instances[MAVLink::Type_t::USB];
-        auto m = itsMAVLink;
-        //if (m == nullptr) LERROR("No Valid Instance. Count");
+        // auto m = mavlink::gMAVLink_instances[MAVLink::Type_t::USB];
+        // auto m = itsMAVLink;
+        if (m == nullptr) LERROR("No Valid MAVLink Instance");
         // Send Heartbeat Every 1 second
         end = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = end - start;
@@ -64,26 +64,26 @@ public:
         }
         LINFO("Receive");
         // Read Periodically
-        //m->receive();
+        m->receive();
         //TODO: run mavlink in separate thread, then block when reading to allow for full packet transmit.
 
         // Send Parameters
-        //m->send_parameters(TRUE);
-//
-//        /* Process Dummy Data */
-//        {
-//            dummy_increment++;
-//            vision_position << 50, 100, 150;
-//            vision_position += 2 * dummy_increment * Eigen::Vector3f::Ones();
-//            vision_position += 5 * Eigen::Vector3f::Random();
-//            if (dummy_increment > 3) dummy_increment = 0;
-//        }
-//        /* Send Dummy Data */
-//        {
-//            mavlink_msg_vision_position_estimate_send(MAVLINK_COMM_1, get_boot_time_us(),
-//                                                      vision_position(0), vision_position(1), vision_position(2),
-//                                                      0, 0, 0);
-//        }
+        m->send_parameters(TRUE);
+
+        /* Process Dummy Data */
+        {
+            dummy_increment++;
+            vision_position << 50, 100, 150;
+            vision_position += 2 * dummy_increment * Eigen::Vector3f::Ones();
+            vision_position += 5 * Eigen::Vector3f::Random();
+            if (dummy_increment > 3) dummy_increment = 0;
+        }
+        /* Send Dummy Data */
+        {
+            mavlink_msg_vision_position_estimate_send(MAVLINK_COMM_1, get_boot_time_us(),
+                                                      vision_position(0), vision_position(1), vision_position(2),
+                                                      0, 0, 0);
+        }
     }
 
     // ####################################################################################################
