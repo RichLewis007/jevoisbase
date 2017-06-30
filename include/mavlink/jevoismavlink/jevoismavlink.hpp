@@ -13,7 +13,7 @@
 #define MAVLINK_STX 253
 #endif
 
-#include "../message.hpp"
+#include "jevoisbase/include/mavlink/message.hpp"
 
 namespace mavlink {
 namespace jevoismavlink {

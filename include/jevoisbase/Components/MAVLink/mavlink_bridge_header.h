@@ -12,7 +12,7 @@
 #define MAVLINK_GET_CHANNEL_STATUS mavlink_get_channel_status
 #define MAVLINK_GET_CHANNEL_BUFFER mavlink_get_channel_buffer
 
-#include <mavlink_types.h>
+#include <mavlink/mavlink_types.h>
 
 extern mavlink_system_t mavlink_system;
 

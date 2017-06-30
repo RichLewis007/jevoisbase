@@ -31,6 +31,7 @@ include(jevois_config)
 include(JeVois)
 
 # Set project name, detects compiler (which has been set by our helper module). Then set some complation flags:
+set(JEVOIS_SDK_ROOT "/home/alsaibie/jevois_dev/jevois-sdk")
 project(jevoisbase)
 jevois_project_set_flags()
 

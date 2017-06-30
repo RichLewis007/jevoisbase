@@ -10,9 +10,15 @@
 #include <list>
 #include <jevois/Debug/Log.H>
 #include <jevois/Core/StdioInterface.H>
-#include "mavlink_bridge_header.h"
-#include "MAVLink.H"
+#include <jevoisbase/Components/MAVLink/mavlink_bridge_header.h>
+#include <jevoisbase/Components/MAVLink/MAVLink.H>
 
+
+
+namespace  mavlink {
+    static  std::map<MAVLink::Type_t, std::shared_ptr<MAVLink> > gMAVLink_instances;
+}
+using namespace mavlink;
 
 mavlink_system_t mavlink_system;
 /*
@@ -22,15 +28,8 @@ MAVLink::MAVLink(std::string const &instance, struct MAVLink_data_struct *MAVDat
         jevois::Component(instance), itsMAVLinkData(MAVData), itsType(type), m_parameter_i
         (ONBOARD_PARAM_COUNT)
 {
-    LDEBUG('MAVLink Constructor');
-    /*
-     * There are two approaches here. The first is to disable Engine from taking the serial device by setting
-     * serialdev= , in the params.cfg in JEVOIS/config on SD Card. The second is to have
-     * engine forward what it
-     * does not parse to the module. I'm afraid this limits the performance of MAVLink, and so will implement
-     * the first option
-     */
-
+    LDEBUG("MAVLink Constructor");
+    // Add subcomponents here,
     // Serial is a SubComponent of MAVLink. Either HARD or USB
     if (itsType == Type_t::Hard){
         mavlink_channel = MAVLINK_COMM_0;
@@ -49,35 +48,41 @@ MAVLink::MAVLink(std::string const &instance, struct MAVLink_data_struct *MAVDat
     else{
         LERROR("Could not start serial");
     }
+}
 
+void MAVLink::postInit() {
+
+    LDEBUG("MAVLink PostInit");
 
     // Set devname in param.cfg so it doesn't need to be re-setup here.
-
-
     // Reset MAVLink Parameters to Default
-    MAVLink_data_reset_param_defaults();
+    reset_param_defaults();
 
     // Set system ID
+    LINFO("Setting MAVLink System ID: " <<itsMAVLinkData->param[PARAM_SYSTEM_ID] <<" and component ID "<< itsMAVLinkData->param[PARAM_COMPONENT_ID]);
     mavlink_system.sysid = itsMAVLinkData->param[PARAM_SYSTEM_ID]; // System ID, 1-255
     mavlink_system.compid = itsMAVLinkData->param[PARAM_COMPONENT_ID]; // Component/Subsystem ID, 1-255
 }
 
+void MAVLink::postUninit() {
 
-MAVLink::~MAVLink() {
+    LDEBUG("MAVLink PostUnInit");
 
-    LDEBUG("MAVLink Deconstructor");
-    mavlink::gMAVLink_instances[itsType] = std::shared_ptr<MAVLink>();
+    mavlink::gMAVLink_instances[itsType] = std::shared_ptr<MAVLink>(); //Assign Empty of type MAVLink
     //TODO: Is this needed? also. implement iterator.
 }
 
+MAVLink::~MAVLink(){}
+
 
 void MAVLink::send_system_state(void) {
-
+    LDEBUG("Heartbeat Message System Type: "<<itsMAVLinkData->param[PARAM_SYSTEM_TYPE] <<" Autopilot Type: " << itsMAVLinkData->param[PARAM_AUTOPILOT_TYPE]);
     mavlink_msg_heartbeat_send(mavlink_channel, itsMAVLinkData->param[PARAM_SYSTEM_TYPE],
                                itsMAVLinkData->param[PARAM_AUTOPILOT_TYPE], 0, 0, 0);
 }
 
 void MAVLink::send_parameters(bool Force) {
+
     LDEBUG("MAVLink::send_parameters");
 
     if (Force) m_parameter_i = 0;
@@ -95,16 +100,17 @@ void MAVLink::send_parameters(bool Force) {
 
 void MAVLink::receive(void) {
 
+
     mavlink_message_t msg;
     mavlink_status_t status = {0};
 
     /* Minimum 20 bytes at a time */
     const unsigned character_count = 20;
-
     /* Read up to buffer size. Loop through characters read and parse. Handle message when packet is complete */
-    if ((numbytes = itsSerial->read(MAVLinkReceiveBuf, sizeof(MAVLinkReceiveBuf))) >=
+    // TODO: Only read if characters are available
+    if ((numbytes = itsSerial->read2(MAVLinkReceiveBuf, sizeof(MAVLinkReceiveBuf))) >=
         (size_t) character_count) {
-
+        //LINFO("Read Buffer, Now Parsing");
         for (size_t i = 0; i < numbytes; i++) {
             if (mavlink_parse_char(mavlink_channel, MAVLinkReceiveBuf[i], &msg, &status)) {
                 /* Handle message */
@@ -118,7 +124,7 @@ void MAVLink::receive(void) {
  std::shared_ptr<MAVLink> MAVLink::get_instance(Type_t type){
 
      std::shared_ptr<MAVLink> inst = mavlink::gMAVLink_instances[type];
-     if (inst != nullptr){
+     if (inst){
          return  inst;
      }
      else{
@@ -134,6 +140,24 @@ void MAVLink::set_instance(std::shared_ptr<MAVLink> &inst) {
     mavlink::gMAVLink_instances[itsType] = inst;
 }
 
+void MAVLink::printsomething(void){
+
+    // LINFO("I'm Here, yes I'm here");
+    itsSerial->writeString("This is a test only");
+}
+
+mavlink_status_t* MAVLink::get_status() {
+    static mavlink_status_t  _mavlink_status;
+    return &_mavlink_status;
+
+}
+
+mavlink_message_t* MAVLink::get_buffer() {
+    static mavlink_message_t _mavlink_buffer;
+    return &_mavlink_buffer;
+
+}
+
 
 /*
  * Below are mavlink_bridge_header.h definitions
@@ -145,16 +169,16 @@ void MAVLink::set_instance(std::shared_ptr<MAVLink> &inst) {
  */
 void mavlink_send_uart_bytes(mavlink_channel_t chan, const uint8_t *ch, uint16_t length) {
 
-    LDEBUG("Sending uart bytes with channel: " << chan);
+    LDEBUG("Sending Bytes on Channel: "<< chan);
 
     if (chan == MAVLINK_COMM_0){
         //auto m = MAVLink::get_instance(MAVLink::Type_t::Hard);
         auto m = mavlink::gMAVLink_instances[MAVLink::Type_t::Hard];
-        try { m->itsSerial->write(ch, length); } catch (...) { jevois::warnAndIgnoreException(); }
+        try { m->itsSerial->writeNoCheck(ch, length); } catch (...) { jevois::warnAndIgnoreException(); }
     }
     else if (chan == MAVLINK_COMM_1){
         auto m = MAVLink::get_instance(MAVLink::Type_t::USB);
-        try { m->itsSerial->write(ch, length); } catch (...) { jevois::warnAndIgnoreException(); }
+        try { m->itsSerial->writeNoCheck(ch, length); } catch (...) { jevois::warnAndIgnoreException(); }
     }
 }
 
