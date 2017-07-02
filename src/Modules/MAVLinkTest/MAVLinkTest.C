@@ -24,11 +24,11 @@
 
 /*! \file */
 
-//! MAVLink Integration Test
+//! MAVLink Integration Test - Work in progress and contributiions welcome.
 /*! This application is a basic demo for the MAVLink Component.
 
     This is a development test demo. This demo can be run with or without USB output. With USB Output the module does
-    a passthrough
+    a passthrough.
 
     Either USB or Hard serial can be used with this module, to use either one, it must not be used by engine. This is
     done by assigning an empty string to the respective serial name macro in Engine.h or in the params.cfg file.
@@ -51,6 +51,11 @@
     incorporated. Refer to the mavlink repository https://github.com/mavlink/mavlink and website
     http://qgroundcontrol.org/mavlink/start to learn more on how to add specific message definitions in xml files and
     regenerate the mavlink header files.
+
+    When using hard serial for mavlink, remember to turn off any boot messages (uncomment first entry in uEnv.txt).
+    You can still print out jevois messages via Serial-over-USB by setting serout and serlog to USB only. Also
+    remember that when using No-USB out videomapping, you either have to specify streamon in initscript or manually
+    enter it through an avialable console.
 
 
     @author Ali AlSaibie
